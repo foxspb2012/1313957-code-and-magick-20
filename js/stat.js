@@ -11,45 +11,45 @@ var BAR_WIDTH = 40;
 var BAR_MAX_HEIGHT = 150;
 var BORDER_PADDING = 20;
 
-var evenStep = function isEvenStep (step) {
-  return step%2;
+var evenStep = function isEvenStep(step) {
+  return step % 2;
 };
 
-var renderCloud = function(ctx, x, y, w, h, s, color) {
+var renderCloud = function (ctx, x, y, w, h, s, color) {
   var maxWidth = x + w;
   var maxHeight = y + h;
   var step = 1;
-
+  var ord = y;
   ctx.fillStyle = color;
 
   ctx.beginPath();
   ctx.moveTo(x, y);
 
-  for (var abs = x+10; maxWidth >= abs; abs += 10) {
-    z = (evenStep(step) ? (y-s) : (y));
-    ctx.lineTo(abs, z);
-    step ++;
+  for (var abs = x + 10; maxWidth >= abs; abs += 10) {
+    ord = (evenStep(step) ? (y - s) : (y));
+    ctx.lineTo(abs, ord);
+    step = step + 1;
   }
 
   step = 1;
-  for (var ord = y+10 ; maxHeight >= ord; ord += 10) {
-    z = (evenStep(step) ? (maxWidth+s) : (maxWidth));
-    ctx.lineTo(z, ord);
-    step ++;
+  for (ord = y + 10; maxHeight >= ord; ord += 10) {
+    abs = (evenStep(step) ? (maxWidth + s) : (maxWidth));
+    ctx.lineTo(abs, ord);
+    step = step + 1;
   }
 
   step = 1;
   for (maxWidth; maxWidth >= x; maxWidth -= 10) {
-    z = (evenStep(step) ? (maxHeight+s) : (maxHeight));
-    ctx.lineTo(maxWidth, z);
-    step ++;
+    ord = (evenStep(step) ? (maxHeight + s) : (maxHeight));
+    ctx.lineTo(maxWidth, ord);
+    step = step + 1;
   }
 
   step = 1;
-   for (maxHeight; maxHeight >= y; maxHeight -= 10) {
-    z = (evenStep(step) ? (x-s) : (x));
-    ctx.lineTo(z, maxHeight);
-    step ++;
+  for (maxHeight; maxHeight >= y; maxHeight -= 10) {
+    abs = (evenStep(step) ? (x - s) : (x));
+    ctx.lineTo(abs, maxHeight);
+    step = step + 1;
   }
 
   ctx.closePath();
@@ -57,7 +57,7 @@ var renderCloud = function(ctx, x, y, w, h, s, color) {
   ctx.fill();
 };
 
-var getMaxElement = function(arr) {
+var getMaxElement = function (arr) {
   var maxElement = arr[0];
 
   for (var i = 0; i < arr.length; i++) {
@@ -85,14 +85,14 @@ var sortData = function (data, index) {
 };
 
 var getIndex = function (players) {
-
+  var returnIndex = 0;
   for (var i = 0; i <= players.length - 1; i++) {
-  var playerValue = players[i];
-
     if (players[i] === 'Вы') {
-      return i;
+      returnIndex = i;
+      break;
     }
   }
+  return returnIndex;
 };
 
 window.renderStatistics = function(ctx, players, times) {
@@ -108,20 +108,20 @@ window.renderStatistics = function(ctx, players, times) {
 
   var yoursIndex = getIndex(players);
 
-  var players = sortData(players, yoursIndex);
+  var playersArray = sortData(players, yoursIndex);
 
-  var times = sortData(times, yoursIndex);
+  var timesArray = sortData(times, yoursIndex);
 
-  for (var i = 0; i < players.length; i++) {
+  for (var i = 0; i < playersArray.length; i++) {
     ctx.fillStyle = 'hsl(240, 100%, ' + Math.round((Math.random() * 100)) + '%)';
-    if (players[i] === 'Вы') {
+    if (playersArray[i] === 'Вы') {
       ctx.fillStyle = 'rgba(255, 0, 0, 1)';
     }
 
-    ctx.fillRect(CLOUD_X + BORDER_PADDING * 2 + (BAR_GAP + BAR_WIDTH) * i, 95 + BAR_MAX_HEIGHT - Math.round((BAR_MAX_HEIGHT * times[i]) / maxTime), BAR_WIDTH, Math.round((BAR_MAX_HEIGHT * times[i]) / maxTime));
+    ctx.fillRect(CLOUD_X + BORDER_PADDING * 2 + (BAR_GAP + BAR_WIDTH) * i, 95 + BAR_MAX_HEIGHT - Math.round((BAR_MAX_HEIGHT * timesArray[i]) / maxTime), BAR_WIDTH, Math.round((BAR_MAX_HEIGHT * timesArray[i]) / maxTime));
 
-    renderText(ctx, players[i], CLOUD_X + BORDER_PADDING * 2 + (BAR_GAP + BAR_WIDTH) * i, BORDER_PADDING * 4.75 + BAR_MAX_HEIGHT + GAP);
+    renderText(ctx, playersArray[i], CLOUD_X + BORDER_PADDING * 2 + (BAR_GAP + BAR_WIDTH) * i, BORDER_PADDING * 4.75 + BAR_MAX_HEIGHT + GAP);
 
-    renderText(ctx, Math.round(times[i]), CLOUD_X + BORDER_PADDING * 2 + (BAR_GAP + BAR_WIDTH) * i, BORDER_PADDING * 4.75 + BAR_MAX_HEIGHT - Math.round((BAR_MAX_HEIGHT * times[i]) / maxTime) - BORDER_PADDING);
+    renderText(ctx, Math.round(timesArray[i]), CLOUD_X + BORDER_PADDING * 2 + (BAR_GAP + BAR_WIDTH) * i, BORDER_PADDING * 4.75 + BAR_MAX_HEIGHT - Math.round((BAR_MAX_HEIGHT * timesArray[i]) / maxTime) - BORDER_PADDING);
   }
 };
