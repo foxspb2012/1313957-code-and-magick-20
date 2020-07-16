@@ -5,18 +5,12 @@
   var MIN_LENGTH = 2;
   var MAX_LENGTH = 25;
 
-  var setupStartingPosition = {
-    left: '50%',
-    top: '80px'
-  };
-
   var setup = document.querySelector('.setup');
   var setupOpen = document.querySelector('.setup-open');
   var setupClose = setup.querySelector('.setup-close');
   var setupForm = setup.querySelector('.setup-wizard-form');
   var userNameInput = document.querySelector('.setup-user-name');
   var dialogHandle = setup.querySelector('.upload');
-
 
   var onPopupCloseClick = function () {
     closePopup();
@@ -74,18 +68,26 @@
     }
   };
 
+  var onPopupSubmit = function (evt) {
+    window.backend.save(new FormData(setupForm), function () {
+      setup.classList.add('hidden');
+    }, window.setup.onError);
+    evt.preventDefault();
+  };
+
   var setSetupPosition = function () {
-    setup.style.left = setupStartingPosition.left;
-    setup.style.top = setupStartingPosition.top;
+    setup.removeAttribute('style');
   };
 
   var openPopup = function () {
     setup.classList.remove('hidden');
     setSetupPosition();
+    window.setup.showSimilarWizards();
     document.addEventListener('keydown', onPopupEscPress);
     setupClose.addEventListener('keydown', onPopupEnterPress);
     setupClose.addEventListener('click', onPopupCloseClick);
     setupForm.addEventListener('click', onSetupPlayerClick);
+    setupForm.addEventListener('submit', onPopupSubmit);
     userNameInput.addEventListener('invalid', onInvalidNameInput);
     userNameInput.addEventListener('input', onNameInput);
     dialogHandle.addEventListener('mousedown', window.move.onMouseDown);
@@ -97,6 +99,7 @@
     setupClose.removeEventListener('keydown', onPopupEnterPress);
     setupClose.removeEventListener('click', onPopupCloseClick);
     setupForm.removeEventListener('click', onSetupPlayerClick);
+    setupForm.removeEventListener('submit', onPopupSubmit);
     userNameInput.removeEventListener('invalid', onInvalidNameInput);
     userNameInput.removeEventListener('input', onNameInput);
     dialogHandle.removeEventListener('mousedown', window.move.onMouseDown);

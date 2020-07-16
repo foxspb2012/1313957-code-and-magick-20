@@ -55,56 +55,66 @@
   var wizardItem = wizardTemplate.content.querySelector('.setup-similar-item');
   var fragment = document.createDocumentFragment();
 
-  function getRandomInt(max) {
-    return Math.floor(Math.random() * Math.floor(max + 1));
-  }
+  var getRandomInteger = function (num) {
+    return Math.floor(Math.random() * num);
+  };
+
+  var getRandomElement = function (arr) {
+    var randomIndex = getRandomInteger(arr.length);
+    return arr[randomIndex];
+  };
+
+  var renderWizard = function (wizard) {
+    var wizardElement = wizardItem.cloneNode(true);
+
+    wizardElement.querySelector('.setup-similar-label').textContent = wizard.name;
+    wizardElement.querySelector('.wizard-coat').style.fill = wizard.colorCoat;
+    wizardElement.querySelector('.wizard-eyes').style.fill = wizard.colorEyes;
+
+    return wizardElement;
+  };
+
+  var onLoad = function (wizards) {
+    for (var i = 0; i < QUANTITY_WIZARDS; i++) {
+      fragment.appendChild(renderWizard(wizards[i]));
+    }
+    similarList.appendChild(fragment);
+    setupSimilar.classList.remove('hidden');
+  };
+
+  var onError = function (errorMessage) {
+    var node = document.querySelector('.error-message');
+
+    if (!node) {
+      node = document.createElement('div');
+      var isNew = true;
+      node.style = 'z-index: 100; margin: 0 auto; text-align: center; background-color: red;';
+      node.style.position = 'absolute';
+      node.style.left = 0;
+      node.style.right = 0;
+      node.style.fontSize = '30px';
+      node.className = 'error-message';
+    }
+    node.textContent = errorMessage;
+
+    if (isNew) {
+      document.body.insertAdjacentElement('afterbegin', node);
+    }
+  };
+
+  var showSimilarWizards = function () {
+    if (similarList.childNodes.length < QUANTITY_WIZARDS) {
+      window.backend.load(onLoad, onError);
+    }
+  };
 
   window.setup = {
     COAT_COLORS: COAT_COLORS,
     EYES_COLORS: EYES_COLORS,
     FIREBALL_COLORS: FIREBALL_COLORS,
 
-    getRandomElement: function (arr) {
-      var randomIndex = getRandomInt(arr.length);
-      return arr[randomIndex];
-    }
+    getRandomElement: getRandomElement,
+    showSimilarWizards: showSimilarWizards,
+    onError: onError
   };
-
-  var getMassiveData = function () {
-    var massiveDatabase = [];
-    for (var i = 0; i < QUANTITY_WIZARDS; i++) {
-      var wizard = {
-        name: FIRST_NAMES[getRandomInt(FIRST_NAMES.length - 1)] + ' ' + LAST_NAMES[getRandomInt(LAST_NAMES.length - 1)],
-        coatColor: COAT_COLORS[getRandomInt(COAT_COLORS.length - 1)],
-        eyesColor: EYES_COLORS[getRandomInt(EYES_COLORS.length - 1)]
-      };
-      massiveDatabase.push(wizard);
-    }
-    return massiveDatabase;
-  };
-
-  var createWizard = function (data) {
-    var wizard = wizardItem.cloneNode(true);
-    var wizardName = wizard.querySelector('.setup-similar-label');
-    var wizardCoat = wizard.querySelector('.wizard-coat');
-    var wizardEyes = wizard.querySelector('.wizard-eyes');
-    wizardName.textContent = data.name;
-    wizardCoat.style.fill = data.coatColor;
-    wizardEyes.style.fill = data.eyesColor;
-    return wizard;
-  };
-
-  var database = getMassiveData();
-
-  var addWizard = function (newWizard, sameFragment) {
-    sameFragment.appendChild(newWizard);
-  };
-
-  for (var i = 0; i < database.length; i++) {
-    var sameWizard = createWizard(database[i]);
-    addWizard(sameWizard, fragment);
-  }
-
-  similarList.appendChild(fragment);
-  setupSimilar.classList.remove('hidden');
 })();
