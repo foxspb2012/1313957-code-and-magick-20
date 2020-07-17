@@ -1,11 +1,11 @@
 'use strict';
 
 (function () {
-  var setup = document.querySelector('.setup');
+  var setup = window.dialog.setup;
   var dialogHandle = setup.querySelector('.upload');
-
-  var onMouseDown = function (evt) {
+  dialogHandle.addEventListener('mousedown', function (evt) {
     evt.preventDefault();
+
     var startCoords = {
       x: evt.clientX,
       y: evt.clientY
@@ -28,11 +28,11 @@
 
       setup.style.top = (setup.offsetTop - shift.y) + 'px';
       setup.style.left = (setup.offsetLeft - shift.x) + 'px';
-
     };
 
     var onMouseUp = function (upEvt) {
       upEvt.preventDefault();
+
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
 
@@ -43,13 +43,11 @@
         };
         dialogHandle.addEventListener('click', onClickPreventDefault);
       }
+
     };
 
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
-  };
+  });
 
-  window.move = {
-    onMouseDown: onMouseDown
-  };
 })();
