@@ -2,116 +2,107 @@
 
 (function () {
 
-  var MIN_LENGTH = 2;
-  var MAX_LENGTH = 25;
-
   var setup = document.querySelector('.setup');
-  var setupOpen = document.querySelector('.setup-open');
   var setupClose = setup.querySelector('.setup-close');
-  var setupForm = setup.querySelector('.setup-wizard-form');
-  var userNameInput = document.querySelector('.setup-user-name');
-  var dialogHandle = setup.querySelector('.upload');
-
-  var onPopupCloseClick = function () {
-    closePopup();
-  };
-
-  var onPopupEnterPress = function (evt) {
-    if (evt.key === 'Enter') {
-      closePopup();
-    }
-  };
-
-  var onInvalidNameInput = function () {
-    if (userNameInput.validity.valueMissing) {
-      userNameInput.setCustomValidity('Обязательное поле');
-    } else {
-      userNameInput.setCustomValidity('');
-    }
-  };
-
-  var onNameInput = function () {
-    var valueLength = userNameInput.value.length;
-
-    if (valueLength < MIN_LENGTH) {
-      userNameInput.setCustomValidity('Ещё ' + (MIN_LENGTH - valueLength) + ' символа(ов)');
-    } else if (valueLength > MAX_LENGTH) {
-      userNameInput.setCustomValidity('Удалите лишние ' + (valueLength - MAX_LENGTH) + ' символа(ов)');
-    } else {
-      userNameInput.setCustomValidity('');
-    }
-  };
-
-  var changeColor = function (colorArray, inputField, windowElement, styleElement) {
-    setupForm.elements[inputField].value = window.setup.getRandomElement(colorArray);
-    windowElement.style[styleElement] = setupForm.elements[inputField].value;
-  };
-
-  var onSetupPlayerClick = function (evt) {
-    switch (evt.target.classList.value) {
-      case 'wizard-coat':
-        changeColor(window.setup.COAT_COLORS, 'coat-color', evt.target, 'fill');
-        break;
-      case 'wizard-eyes':
-        changeColor(window.setup.EYES_COLORS, 'eyes-color', evt.target, 'fill');
-        break;
-      case 'setup-fireball':
-        changeColor(window.setup.FIREBALL_COLORS, 'fireball-color', evt.target, 'backgroundColor');
-        break;
-    }
-  };
+  var setupOpen = document.querySelector('.setup-open');
 
   var onPopupEscPress = function (evt) {
-    if ((evt.key === 'Escape') && (evt.target.classList.value !== 'setup-user-name')) {
-      evt.preventDefault();
-      closePopup();
-    }
-  };
-
-  var onPopupSubmit = function (evt) {
-    window.backend.save(new FormData(setupForm), function () {
-      setup.classList.add('hidden');
-    }, window.setup.onError);
-    evt.preventDefault();
-  };
-
-  var setSetupPosition = function () {
-    setup.removeAttribute('style');
+    window.common.runEventEsc(evt, closePopup);
   };
 
   var openPopup = function () {
-    setup.classList.remove('hidden');
-    setSetupPosition();
-    window.setup.showSimilarWizards();
+    setup.classList.remove(window.const.HIDDEN_CLASS);
     document.addEventListener('keydown', onPopupEscPress);
-    setupClose.addEventListener('keydown', onPopupEnterPress);
-    setupClose.addEventListener('click', onPopupCloseClick);
-    setupForm.addEventListener('click', onSetupPlayerClick);
-    setupForm.addEventListener('submit', onPopupSubmit);
-    userNameInput.addEventListener('invalid', onInvalidNameInput);
-    userNameInput.addEventListener('input', onNameInput);
-    dialogHandle.addEventListener('mousedown', window.move.onMouseDown);
+
+    var setupWizardForm = setup.querySelector('.setup-wizard-form');
+    var setupUserName = setupWizardForm.querySelector('.setup-user-name');
+
+    setupUserName.addEventListener('keydown', function (evt) {
+      evt.stopPropagation();
+    });
+
+    setupUserName.addEventListener('invalid', function () {
+      if (setupUserName.validity.valueMissing) {
+        setupUserName.setCustomValidity('Обязательное поле');
+        return;
+      }
+      if (setupUserName.validity.tooShort) {
+        setupUserName.setCustomValidity('Имя должно состоять минимум из 2-х символов');
+        return;
+      }
+      if (setupUserName.validity.tooLong) {
+        setupUserName.setCustomValidity('Имя не должно превышать 25-ти символов');
+        return;
+      }
+      setupUserName.setCustomValidity('');
+    });
+
+    setupUserName.addEventListener('input', function () {
+      var valueLength = setupUserName.value.length;
+
+      if (valueLength < window.const.nameLength.MIN) {
+        setupUserName.setCustomValidity('Ещё ' + (window.const.nameLength.MIN - valueLength) + ' символ(а)');
+        return;
+      }
+      if (valueLength > window.const.nameLength.MAX) {
+        setupUserName.setCustomValidity('Удалите лишние ' + (valueLength - window.const.nameLength.MIN) + ' символ(а)');
+        return;
+      }
+      setupUserName.setCustomValidity('');
+    });
+
+    var hiddenCoatColor = setupWizardForm.querySelector('input[name=coat-color]');
+    var hiddenEyesColor = setupWizardForm.querySelector('input[name=eyes-color]');
+    var hiddenFireballColor = setupWizardForm.querySelector('input[name=fireball-color]');
+
+    var wizardCoat = setupWizardForm.querySelector('.wizard-coat');
+    wizardCoat.addEventListener('click', function () {
+      var elementColor = window.const.COAT_COLORS[window.common.getRandomInteger(0, window.const.COAT_COLORS.length - 1)];
+      wizardCoat.style.fill = elementColor;
+      hiddenCoatColor.value = elementColor;
+      window.dialog.coatColor = elementColor;
+
+      window.debounce(window.setup.updateWizards);
+    });
+
+    var wizardEyes = setupWizardForm.querySelector('.wizard-eyes');
+    wizardEyes.addEventListener('click', function () {
+      var elementColor = window.common.getRandomElement(window.common.getRandomInteger(0, window.const.EYES_COLORS.length - 1), window.const.EYES_COLORS);
+      wizardEyes.style.fill = elementColor;
+      hiddenEyesColor.value = elementColor;
+      window.dialog.eyesColor = elementColor;
+
+      window.debounce(window.setup.updateWizards);
+    });
+
+    var wizardFireball = setupWizardForm.querySelector('.setup-fireball-wrap');
+    wizardFireball.addEventListener('click', function () {
+      var elementColor = window.common.getRandomElement(window.common.getRandomInteger(0, window.const.FIREBALL_COLORS.length - 1), window.const.FIREBALL_COLORS);
+      wizardFireball.style.backgroundColor = elementColor;
+      hiddenFireballColor.value = elementColor;
+    });
+
   };
 
   var closePopup = function () {
-    setup.classList.add('hidden');
+    setup.classList.add(window.const.HIDDEN_CLASS);
     document.removeEventListener('keydown', onPopupEscPress);
-    setupClose.removeEventListener('keydown', onPopupEnterPress);
-    setupClose.removeEventListener('click', onPopupCloseClick);
-    setupForm.removeEventListener('click', onSetupPlayerClick);
-    setupForm.removeEventListener('submit', onPopupSubmit);
-    userNameInput.removeEventListener('invalid', onInvalidNameInput);
-    userNameInput.removeEventListener('input', onNameInput);
-    dialogHandle.removeEventListener('mousedown', window.move.onMouseDown);
   };
 
-  var listenerClickDown = function (evt) {
-    if (evt.which === 1 || evt.key === 'Enter') {
-      openPopup();
-    }
-  };
+  setupOpen.addEventListener('click', openPopup);
+  setupOpen.addEventListener('keydown', function (evt) {
+    window.common.runEventEnter(evt, openPopup);
+  });
 
-  setupOpen.addEventListener('click', listenerClickDown);
-  setupOpen.addEventListener('keydown', listenerClickDown);
+  setupClose.addEventListener('click', closePopup);
+  setupClose.addEventListener('keydown', function (evt) {
+    window.common.runEventEsc(evt, closePopup);
+  });
+
+  window.dialog = {
+    setup: setup,
+    setupOpen: setupOpen,
+    setupClose: setupClose,
+  };
 
 })();

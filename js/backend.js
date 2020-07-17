@@ -1,52 +1,44 @@
 'use strict';
-
 (function () {
-  var URLTo = 'https://javascript.pages.academy/code-and-magick';
-  var URLFrom = URLTo + '/data';
-  var TIMEOUT_IN_MS = 5000;
-  var StatusCode = {
-    OK: 200
-  };
 
-  var prepareXhr = function (onLoad, onError) {
-    var xhr = new XMLHttpRequest();
+  var createRequest = function (xhr, onLoad, onError) {
     xhr.responseType = 'json';
-    xhr.timeout = TIMEOUT_IN_MS;
 
     xhr.addEventListener('load', function () {
-      if (xhr.status === StatusCode.OK) {
+      if (xhr.status === window.const.statusCode.OK) {
         onLoad(xhr.response);
-      } else {
-        onError('Статус ответа: ' + xhr.status + ' ' + xhr.statusText);
+        return;
       }
+      onError('Статус ответа: ' + xhr.status + ' ' + xhr.statusText);
     });
+
     xhr.addEventListener('error', function () {
       onError('Произошла ошибка соединения');
     });
+
     xhr.addEventListener('timeout', function () {
       onError('Запрос не успел выполниться за ' + (xhr.timeout / 1000) + 'секунд');
     });
 
-    return xhr;
+    xhr.timeout = window.const.TIMEOUT;
   };
 
   var load = function (onLoad, onError) {
-    var xhr = prepareXhr(onLoad, onError);
-
-    xhr.open('GET', URLFrom);
+    var xhr = new XMLHttpRequest();
+    createRequest(xhr, onLoad, onError);
+    xhr.open('GET', window.const.HTTPMethod.GET);
     xhr.send();
   };
 
   var save = function (data, onLoad, onError) {
-    var xhr = prepareXhr(onLoad, onError);
-
-    xhr.open('POST', URLTo);
+    var xhr = new XMLHttpRequest();
+    createRequest(xhr, onLoad, onError);
+    xhr.open('POST', window.const.HTTPMethod.POST);
     xhr.send(data);
   };
 
   window.backend = {
     load: load,
-    save: save
+    save: save,
   };
 })();
-
