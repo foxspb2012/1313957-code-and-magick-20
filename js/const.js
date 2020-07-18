@@ -59,6 +59,7 @@
   var TIMEOUT = 5000;
   var QUANTITY_WIZARDS = 4;
   var DEBOUNCE_INTERVAL = 300;
+  var TYPE_FILES = ['gif', 'jpg', 'jpeg', 'png'];
 
   window.const = {
     key: key,
@@ -81,6 +82,7 @@
     TIMEOUT: TIMEOUT,
     QUANTITY_WIZARDS: QUANTITY_WIZARDS,
     DEBOUNCE_INTERVAL: DEBOUNCE_INTERVAL,
+    TYPE_FILES: TYPE_FILES,
   };
 
 })();
